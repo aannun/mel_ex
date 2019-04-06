@@ -1,0 +1,107 @@
+//ex 1
+string $materials[] = {"lambert", "lambert", "blinn"}; 
+matrix $colors[3][3] = <<1,0,0;
+		                  0,1,0;
+		                  0,0,1>>;
+
+for($i = 0; $i < 3; $i++)
+{
+    //create spheres and set position
+    polySphere -r 1 -sx 20 -sy 20 -ax 0 1 0 -cuv 2 -ch 1;
+    int $x = $i * 5;
+    move $x 0 0;
+
+    //create cubes and set position
+    string $cube[] = `polyCube -w 1 -h 1 -d 1 -sx 1 -sy 1 -sz 1 -ax 0 1 0 -cuv 4 -ch 1`;
+    move $x 3 0;
+
+    //assign materials
+    set_material($cube[0], `shadingNode -asShader $materials[$i]`, $colors[$i][0], $colors[$i][1], $colors[$i][2]);
+}
+
+proc set_material(string $target,string $material, float $r,float $g, float $b)
+{
+    select -r $target;
+    hyperShade -assign $material;
+    string $colorAttr =  $material + ".color";
+	setAttr $colorAttr -type float3 $r $g $b;
+}
+
+
+//ex 2 
+move_up();
+
+proc move_up()
+{
+    //get selected elements and move them up
+    string $objs[] = `ls -sl`;
+    move -r -y 1.5;
+}
+
+
+//ex 3
+print_objects_count();
+
+proc print_objects_count()
+{
+    //get selected elements
+    string $objs[] = `ls -sl`;
+    string $nodes[] = `listRelatives -s $objs`;
+
+    //print number of selected items
+    print("num selected: " + size($objs) + " num nodes: " + size($nodes) + "\n");
+}
+
+//ex 4 
+print_objects();
+
+proc print_objects()
+{
+    //get selected elements
+    string $objs[] = `ls -sl`;
+
+    int $joints = 0;
+    int $meshes = 0;
+    int $transforms = 0;
+
+    //count nodes
+    for($item in $objs)
+    {
+        string $type = `nodeType $item`;
+        switch($type)
+        {
+            case "mesh":
+                $meshes = $meshes + 1;
+                break;
+            case "transform":
+                $transforms = $transforms + 1;
+                break;
+            case "joint":
+                $joints = $joints + 1;
+                break;
+        }
+    }
+    print("joints: " + $joints + "\nmeshes: " + $meshes + "\ntransforms: " + $transforms);
+}
+
+
+//ex 5
+string $winName = "Welcome";
+if(`window -q -exists $winName`)
+    deleteUI $winName;
+
+window -s 0 $winName;
+window -e -h 1 -w 250 $winName;
+    columnLayout -rowSpacing 10 -columnWidth 250;
+        rowLayout -numberOfColumns 2;
+            text "Name: ";  
+            string $textField = `textField`;
+        setParent..;   
+        button -label "submit" -align "center" -c "Welcome(`textField -q -tx $textField`)";
+    setParent..;
+showWindow;
+
+proc Welcome(string $name)
+{
+    print("Welcome " + $name + "!\n");
+}
